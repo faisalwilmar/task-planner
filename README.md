@@ -19,6 +19,12 @@ go mod tidy
 ## Installation
 
 Clone this project.
-Make sure you have Golang >1.6.6 installed and a MongoDB Cluster Database
+Make sure you have Golang >1.16.6 installed and a MongoDB Cluster Database. Set environment variable first before running.
+```
+set MONGO_USER=<your_mongo_db_username>
+set MONGO_PASS=<your_mongo_db_password>
+set MONGO_DB=<your_mongo_db_database_name>
 
+go run main.go
+```
     

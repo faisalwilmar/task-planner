@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -98,7 +99,7 @@ func GetSingleTaskEndpoint(response http.ResponseWriter, req *http.Request) {
 func main() {
 	fmt.Println("Starting the application...")
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-	clientOptions := options.Client().ApplyURI("mongodb+srv://taskuser:7EHTZNXRJHCNokW2@task-planner.gbyx1.mongodb.net/task-planner?retryWrites=true&w=majority")
+	clientOptions := options.Client().ApplyURI("mongodb+srv://" + os.Getenv("MONGO_USER") + ":" + os.Getenv("MONGO_PASS") + "@task-planner.gbyx1.mongodb.net/" + os.Getenv("MONGO_DB") + "?retryWrites=true&w=majority")
 	localClient, err := mongo.Connect(ctx, clientOptions)
 	if err != nil {
 		log.Fatal(err)
