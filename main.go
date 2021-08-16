@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -96,6 +97,49 @@ func GetSingleTaskEndpoint(response http.ResponseWriter, req *http.Request) {
 	json.NewEncoder(response).Encode(task)
 }
 
+func UpdateSingleTaskEndpoint(response http.ResponseWriter, req *http.Request) {
+	response.Header().Set("content-type", "application/json")
+
+	var task Task
+
+	collection := client.Database("task-planner").Collection("task")
+	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+
+	json.NewDecoder(req.Body).Decode(&task)
+
+	// Write update statement
+	update := bson.M{
+		"$set": task,
+	}
+
+	_, err2 := collection.UpdateOne(ctx, Task{ID: task.ID}, update)
+	if err2 != nil {
+		response.WriteHeader(http.StatusInternalServerError)
+		response.Write([]byte(`{"message": "` + err2.Error() + `"}`))
+		return
+	}
+
+	json.NewEncoder(response).Encode(task)
+}
+
+func DeleteSingleTaskEndpoint(response http.ResponseWriter, req *http.Request) {
+	response.Header().Set("content-type", "application/json")
+	params := mux.Vars(req)
+	id, _ := primitive.ObjectIDFromHex(params["id"])
+
+	collection := client.Database("task-planner").Collection("task")
+	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+
+	deleteResult, err := collection.DeleteOne(ctx, Task{ID: id})
+	if err != nil {
+		response.WriteHeader(http.StatusInternalServerError)
+		response.Write([]byte(`{"message": "` + err.Error() + `"}`))
+		return
+	}
+
+	response.Write([]byte(`{"deletedCount": "` + strconv.FormatInt(int64(deleteResult.DeletedCount), 10) + `"}`))
+}
+
 func main() {
 	fmt.Println("Starting the application...")
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
@@ -104,11 +148,14 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	fmt.Println("Connected to Database " + os.Getenv("MONGO_DB"))
 	client = localClient
 	router := mux.NewRouter()
 	router.HandleFunc("/task", CreateTaskEndpoint).Methods("POST")
 	router.HandleFunc("/task/{id}", GetSingleTaskEndpoint).Methods("GET")
 	router.HandleFunc("/task", GetTasksEndpoint).Methods("GET")
+	router.HandleFunc("/task", UpdateSingleTaskEndpoint).Methods("PUT")
+	router.HandleFunc("/task/{id}", DeleteSingleTaskEndpoint).Methods("DELETE")
 	http.ListenAndServe(":12345", router)
 }
 
