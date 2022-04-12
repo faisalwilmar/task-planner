@@ -1,8 +1,8 @@
-version: '1.0'
+version: '3.7'
 
 services:
   task-planner:
-    image: golang:latest
+    image: faisalwilmar/task-planner:latest
     restart: always
     environment:
       MONGO_USER: your_mongo_user
@@ -10,3 +10,6 @@ services:
       MONGO_DB: your_mongo_database_name
     ports:
       - "12345:12345"
+
+
+# reference https://docs.docker.com/samples/wordpress/
