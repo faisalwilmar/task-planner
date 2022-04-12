@@ -1,0 +1,12 @@
+version: '1.0'
+
+services:
+  task-planner:
+    image: golang:latest
+    restart: always
+    environment:
+      MONGO_USER: your_mongo_user
+      MONGO_PASS: your_mongo_password
+      MONGO_DB: your_mongo_database_name
+    ports:
+      - "12345:12345"
